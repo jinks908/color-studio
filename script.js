@@ -7,7 +7,7 @@ function textColor(hex) {
     const b = parseInt(hex.slice(5, 7), 16);
     // relative luminance (sRGB-ish, good enough for contrast choice)
     const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-    return lum > 0.50 ? "#12161f" : "#ffffff";
+    return lum > 0.5 ? "#12161f" : "#ffffff";
 }
 
 function copyHex(hex, cell) {

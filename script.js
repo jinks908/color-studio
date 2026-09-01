@@ -4,6 +4,10 @@ import { DATA } from './colors.js';
 // Store the colors of the sections that have a nav property
 const buttonColors = {};
 
+// Track active section for navbar/back button highlights
+let active = null;
+let prev;
+
 // Choose black or white label text based on the swatch's perceived brightness.
 function textColor(hex) {
     // Extract RGB values from hex
@@ -52,10 +56,14 @@ function build() {
         const colors = DATA.families[fam];
 
         // Nav link
+        const div = document.createElement('div');
+        div.id = "nav-" + fam;
+        div.style.paddingBottom = "25px";
         const a = document.createElement("a");
         a.href = "#" + fam;
         a.textContent = label;
-        nav.appendChild(a);
+        div.appendChild(a);
+        nav.appendChild(div);
 
         // Section
         const section = document.createElement("section");
@@ -125,33 +133,41 @@ function updateColor() {
     const btn = document.querySelector('.back-button');
     const sections = document.querySelectorAll('section');
     const navbar = document.querySelector("nav");
-    let active;
+
+    // Bail if build() not complete
+    if (!btn || !sections) return;
 
     // Midpoint of viewport
     const scrollY = window.scrollY + window.innerHeight / 2;
 
     // Loop through sections
     for (let section of sections) {
-        const currentSection = section.id;
+        const currentSectionId = section.id;
 
-        // Remove border highlight from current section
-        navbar.querySelector(`a[href="#${currentSection}"]`).classList.remove('active-section');
         // Mark active section if we're past its heading.
         // Since we're traversing sections from top to bottom, `active` will
         // end up with the section we're currently in.
         if (scrollY >= section.offsetTop) {
-            active = currentSection;
-        } else {
-            if (active) {
-                // Find the active section and highlight border
-                const activeSection = navbar.querySelector(`a[href="#${active}"]`)
-                if (activeSection) activeSection.classList.add('active-section');
+            // Remove border highlight from previous active section
+            if (active) prev.classList.remove('active-section');
+            // Update active section
+            active = currentSectionId;
 
+            // Find the active navbar section and highlight border
+            const activeSection = document.getElementById("nav-" + active);
+            if (activeSection) {
+                activeSection.classList.add('active-section');
+                // Update previous
+                prev = activeSection;
+            }
+
+            if (buttonColors[active]) {
                 // Update back button colors w/ active section highlight
                 btn.style.color = buttonColors[active].fg;
                 btn.style.backgroundColor = buttonColors[active].bg;
-                break;
             }
+        } else {
+            break;
         }
     }
 }

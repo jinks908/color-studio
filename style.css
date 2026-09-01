@@ -83,7 +83,7 @@ nav {
 
 nav .inner {
     max-width: 1200px;
-    padding: 20px 0px;
+    padding: 20px 0px 0px 0px;
     margin: 0 auto;
     display: flex;
     flex-wrap: wrap;
@@ -103,7 +103,7 @@ nav a {
 }
 
 .active-section {
-    border-color: var(--text) !important;
+    border-bottom: 4px solid var(--text) !important;
 }
 
 nav a:hover {

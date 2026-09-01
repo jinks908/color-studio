@@ -17,7 +17,7 @@ function textColor(hex) {
 
     // Calculate relative luminance
     const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-    return lum > 0.5 ? "#12161f" : "#ffffff";
+    return lum > 0.5 ? "#1e2836" : "#ffffff";
 }
 
 // Copy hex color to clipboard
@@ -128,53 +128,54 @@ function build() {
     });
 }
 
-// Change back button color based on current section
-function updateColor() {
+// Assign currently active section
+function setActive(sectionId) {
     const btn = document.querySelector('.back-button');
-    const sections = document.querySelectorAll('section');
-    const navbar = document.querySelector("nav");
+    if (!btn) return;
 
-    // Bail if build() not complete
-    if (!btn || !sections) return;
+    // Remove previous highlight
+    if (active && prev) prev.classList.remove('active-section');
+    active = sectionId;
+    const activeSection = document.getElementById("nav-" + active);
 
-    // Midpoint of viewport
-    const scrollY = window.scrollY + window.innerHeight / 2;
+    if (activeSection) {
+        // Highlight new active section
+        activeSection.classList.add('active-section');
+        // Replace previous
+        prev = activeSection;
+    }
 
-    // Loop through sections
-    for (let section of sections) {
-        const currentSectionId = section.id;
-
-        // Mark active section if we're past its heading.
-        // Since we're traversing sections from top to bottom, `active` will
-        // end up with the section we're currently in.
-        if (scrollY >= section.offsetTop) {
-            // Remove border highlight from previous active section
-            if (active) prev.classList.remove('active-section');
-            // Update active section
-            active = currentSectionId;
-
-            // Find the active navbar section and highlight border
-            const activeSection = document.getElementById("nav-" + active);
-            if (activeSection) {
-                activeSection.classList.add('active-section');
-                // Update previous
-                prev = activeSection;
-            }
-
-            if (buttonColors[active]) {
-                // Update back button colors w/ active section highlight
-                btn.style.color = buttonColors[active].fg;
-                btn.style.backgroundColor = buttonColors[active].bg;
-            }
-        } else {
-            break;
-        }
+    // Highlight back button with current section color
+    if (buttonColors[active]) {
+        btn.style.color = buttonColors[active].fg;
+        btn.style.backgroundColor = buttonColors[active].bg;
     }
 }
 
-// Update back button color on scrolls and window changes
-window.addEventListener('scroll', updateColor);
-window.addEventListener('resize', updateColor);
+// Initialize section observer
+function initObserver() {
+    const sections = document.querySelectorAll('section');
+    const observer = new IntersectionObserver(
+        (entries) => {
+            entries.forEach((entry) => {
+                // If section crosses the rootMargin, mark it as active
+                if (entry.isIntersecting) {
+                    setActive(entry.target.id);
+                }
+            });
+        },
+        {
+            // We enter a section when it crosses the center of the viewport
+            rootMargin: '-50% 0px -50% 0px',
+            threshold: 0,
+        }
+    );
+    // Watch all sections
+    sections.forEach((sec) => observer.observe(sec));
+}
 
-// Build page elements after DOM loads
-document.addEventListener("DOMContentLoaded", build);
+// Build page elements & setup section observer after DOM loads
+document.addEventListener("DOMContentLoaded", () => {
+    build();
+    initObserver();
+});

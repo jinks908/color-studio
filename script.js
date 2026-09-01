@@ -1,5 +1,8 @@
 import { DATA } from './colors.js';
 
+// Store the colors of the sections that have a nav property
+const buttonColors = {};
+
 // Choose black or white label text based on the swatch's perceived brightness.
 function textColor(hex) {
     const r = parseInt(hex.slice(1, 3), 16);
@@ -70,6 +73,7 @@ function build() {
             if (c.nav) {
                 a.style.background = c.hex;
                 a.style.color = labelColor;
+                buttonColors[fam] = { fg: labelColor, bg: c.hex };
             }
             const cell = document.createElement("div");
             cell.className = "cell";
@@ -98,5 +102,42 @@ function build() {
         main.appendChild(section);
     });
 }
+
+function updateColor() {
+    const btn = document.querySelector('.back-button');
+    const sections = document.querySelectorAll('section');
+    const navbar = document.querySelector("nav");
+    let active;
+
+    // Midpoint of viewport
+    const scrollY = window.scrollY + window.innerHeight / 2;
+
+    // Loop through sections
+    sections.forEach((sec, name) => {
+        const currentSection = sec.id;
+
+        // Remove border highlight from current section
+        navbar.querySelector(`a[href="#${currentSection}"]`).classList.remove('active-section');
+        // Mark active section if we're past its heading.
+        // Since we're traversing sections from top to bottom, `active` will
+        // end up with the section we're currently in.
+        if (scrollY >= sec.offsetTop) {
+            active = currentSection;
+        }
+    });
+    if (active) {
+        // Find the active section and highlight border
+        const activeSection = navbar.querySelector(`a[href="#${active}"]`)
+        if (activeSection) activeSection.classList.add('active-section');
+
+        // Update back button colors w/ active section highlight
+        btn.style.color = buttonColors[active].fg;
+        btn.style.backgroundColor = buttonColors[active].bg;
+    }
+}
+
+window.addEventListener('scroll', updateColor);
+window.addEventListener('resize', updateColor);
+updateColor();
 
 document.addEventListener("DOMContentLoaded", build);
